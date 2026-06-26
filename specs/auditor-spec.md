@@ -43,8 +43,8 @@ Record every interaction — question, safety tier, and response preview — to 
 | `"tier"` | `str` | Safety tier assigned to this question |
 | `"question"` | `str` | The user's question, truncated to 300 characters |
 | `"response_preview"` | `str` | First 200 characters of the generated response |
-| `[your field]` | `[type]` | [description] |
-| `[your field]` | `[type]` | [description] |
+| `reasoning` | `str` | First 200 characters of the reasoning from classify_safety_tier() |
+| `response_status` | `str` | Indicates whether the response was generated successfully (success) or if a fallback response was returned (fallback) |
 
 ---
 
@@ -53,7 +53,11 @@ Record every interaction — question, safety tier, and response preview — to 
 *The required fields truncate the question to 300 characters and the response to 200. Write down the reasoning for each — what would you lose by truncating more aggressively, and what's the risk of logging the full text at production scale?*
 
 ```
-[your answer here]
+The question is truncated to 300 characters because it usually captures the full repair request while preventing excessively long prompts from bloating the log. Truncating much more aggressively (e.g., 100 characters) could omit critical details such as whether the repair involves electricity, gas, or plumbing, making debugging difficult.
+
+The response preview is truncated to 200 characters because it is primarily intended to quickly verify that the correct response style (safe, caution, or refuse) was generated. Logging the entire response provides little additional debugging value while significantly increasing storage requirements.
+
+Logging full questions and responses at production scale would increase storage costs, make logs harder to inspect, and could unnecessarily retain user-provided information that is not needed for debugging.
 ```
 
 ---
@@ -63,7 +67,9 @@ Record every interaction — question, safety tier, and response preview — to 
 *What happens if `logs/` doesn't exist when the function runs for the first time? How will you handle that — and why is this worth thinking about at all?*
 
 ```
-[your answer here]
+If the logs/ directory does not exist, the function should create it automatically before writing the log file (e.g., using os.makedirs("logs", exist_ok=True)).
+
+This prevents the first logging attempt from failing with a file system error and makes the logging functionality work without requiring manual setup, which is especially important when deploying the application on a new machine or server.
 ```
 
 ---
@@ -73,7 +79,7 @@ Record every interaction — question, safety tier, and response preview — to 
 *Write an example of what you want the one-line terminal summary to look like after a question is logged. Be specific about format.*
 
 ```
-[your example output here]
+[LOG] 2026-06-26T15:42:18Z | Tier: caution | Status: success | Logged to logs/repair_log.jsonl
 ```
 
 ---
